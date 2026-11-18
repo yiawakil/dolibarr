@@ -1,0 +1,46 @@
+services:
+  dolibarr-db:
+    image: mariadb:10.11
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DOLIBARR_DB_ROOT_PASSWORD:-Admin.123}
+      MYSQL_DATABASE: ${DOLIBARR_DB_NAME:-dolibarr}
+      MYSQL_USER: ${DOLIBARR_DB_USER:-dolibarr_user}
+      MYSQL_PASSWORD: ${DOLIBARR_DB_PASSWORD:-Admin.123}
+      TZ: ${TZ:-Asia/Karachi}
+    volumes:
+      - dolibarr-mariadb-data:/var/lib/mysql
+
+  dolibarr:
+    image: tuxgasy/dolibarr:latest
+    restart: always
+    depends_on:
+      - dolibarr-db
+    ports:
+      - "8086:80"
+    environment:
+      DOLI_DB_HOST: dolibarr-db
+      DOLI_DB_NAME: ${DOLIBARR_DB_NAME:-dolibarr}
+      DOLI_DB_USER: ${DOLIBARR_DB_USER:-dolibarr_user}
+      DOLI_DB_PASSWORD: ${DOLIBARR_DB_PASSWORD:-Admin.123}
+      DOLI_ADMIN_LOGIN: ${DOLIBARR_ADMIN_LOGIN:-admin}
+      DOLI_ADMIN_PASSWORD: ${DOLIBARR_ADMIN_PASSWORD:-Admin.123}
+      TZ: ${TZ:-Asia/Karachi}
+    volumes:
+      - dolibarr-docs-data:/var/documents
+      - dolibarr-custom-data:/var/www/html/custom
+    networks:
+      - default
+      - web_network
+
+volumes:
+  dolibarr-mariadb-data:
+    external: true
+  dolibarr-docs-data:
+    external: true
+  dolibarr-custom-data:
+    external: true
+
+networks:
+  web_network:
+    external: true
